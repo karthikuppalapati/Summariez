@@ -5,7 +5,7 @@ import com.better.Summariez.dtos.UserRegistrationDTO;
 import com.better.Summariez.dtos.UserSignInDTO;
 import com.better.Summariez.models.User;
 import com.better.Summariez.respositories.UserRepository;
-import com.better.Summariez.services.UserService;
+import com.better.Summariez.services.UserServiceImpl;
 import com.better.Summariez.utils.JwtUtils;
 import com.better.Summariez.utils.ResponseWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,7 @@ import java.util.Optional;
 public class UserController {
 
     @Autowired private UserRepository userRepo;
-    @Autowired private UserService userService;
+    @Autowired private UserServiceImpl userService;
     @Autowired private JwtUtils jwtUtils;
 
     @PostMapping("/register")

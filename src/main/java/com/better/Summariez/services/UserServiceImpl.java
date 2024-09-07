@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 
 @Service
-public class UserService {
+public class UserServiceImpl {
     // Constructs User model object from the registrationDTO
     public User constructUser(UserRegistrationDTO registrationDTO) {
         User user = User.builder()
