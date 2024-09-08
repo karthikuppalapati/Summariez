@@ -1,6 +1,8 @@
 package com.better.Summariez.services;
 
+import com.better.Summariez.dtos.SummaryDTO;
 import com.better.Summariez.dtos.UserRegistrationDTO;
+import com.better.Summariez.models.Summary;
 import com.better.Summariez.models.User;
 import org.springframework.stereotype.Service;
 

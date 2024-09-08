@@ -1,0 +1,29 @@
+package com.better.Summariez.services;
+
+import com.better.Summariez.dtos.SummaryDTO;
+import com.better.Summariez.models.Summary;
+import com.better.Summariez.models.User;
+import com.better.Summariez.respositories.SummaryRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.sql.Timestamp;
+
+@Service
+public class SummaryService {
+    @Autowired private SummaryRepository summaryRepo;
+    private Summary constructSummary(String volumeId, SummaryDTO summaryDTO, User user) {
+        return Summary.builder()
+                .content(summaryDTO.getContent())
+                .userId(user.getId())
+                .volumeId(volumeId)
+                .likesCount(0)
+                .createdAt(new Timestamp(System.currentTimeMillis()).toLocalDateTime())
+                .build();
+    }
+
+    public Summary saveSummary(String volumeId, User user, SummaryDTO summaryDTO) {
+        Summary summary = constructSummary(volumeId, summaryDTO, user);
+        return summary = summaryRepo.save(summary);
+    }
+}
