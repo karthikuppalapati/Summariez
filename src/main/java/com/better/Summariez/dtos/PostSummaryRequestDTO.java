@@ -7,6 +7,6 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SummaryDTO {
+public class PostSummaryRequestDTO {
     private String content;
 }

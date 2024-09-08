@@ -1,6 +1,7 @@
 package com.better.Summariez.controllers;
 
 import com.better.Summariez.constants.ValidationConstants;
+import com.better.Summariez.dtos.ProfileDTO;
 import com.better.Summariez.dtos.UserRegistrationDTO;
 import com.better.Summariez.dtos.UserSignInDTO;
 import com.better.Summariez.models.User;
@@ -8,16 +9,18 @@ import com.better.Summariez.respositories.UserRepository;
 import com.better.Summariez.services.UserServiceImpl;
 import com.better.Summariez.utils.JwtUtils;
 import com.better.Summariez.utils.ResponseWrapper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
 @RestController
 public class UserController {
+
+    private static final Logger logger = LogManager.getLogger(UserController.class);
 
     @Autowired private UserRepository userRepo;
     @Autowired private UserServiceImpl userService;
@@ -44,5 +47,23 @@ public class UserController {
         }
         return new ResponseWrapper<>(false, null, new ResponseWrapper.ErrorResponse(
                 HttpStatus.NOT_FOUND.value(), ValidationConstants.USER_NOT_FOUND));
+    }
+
+    @GetMapping("/profile")
+    public ResponseWrapper<ProfileDTO> fetchUserProfile(@RequestHeader(value = "Authorization") String authorization) {
+        try {
+            String emailId = jwtUtils.getEmailFromToken(authorization);
+            if(emailId == null || emailId.isEmpty())
+                return new ResponseWrapper<>(false, null, new ResponseWrapper.ErrorResponse(400,
+                        "Invalid token"));
+            Optional<User> user = userRepo.findByEmailId(emailId);
+            return user.map(value -> new ResponseWrapper<>(true, userService.fetchProfile(value), null))
+                    .orElseGet(() -> new ResponseWrapper<>(false, null, new ResponseWrapper.ErrorResponse
+                            (404, "User not found")));
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        }
+        return new ResponseWrapper<>(false, null, new ResponseWrapper.ErrorResponse(500,
+                ValidationConstants.INTERNAL_SERVER_ERROR));
     }
 }

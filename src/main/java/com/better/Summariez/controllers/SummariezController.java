@@ -1,8 +1,7 @@
 package com.better.Summariez.controllers;
 
 import com.better.Summariez.constants.ValidationConstants;
-import com.better.Summariez.dtos.SummaryDTO;
-import com.better.Summariez.interfaces.IUserService;
+import com.better.Summariez.dtos.PostSummaryRequestDTO;
 import com.better.Summariez.models.User;
 import com.better.Summariez.respositories.UserRepository;
 import com.better.Summariez.services.SummaryService;
@@ -31,7 +30,7 @@ public class SummariezController {
     @PostMapping("/summary")
     public ResponseWrapper<String> postSummary(@RequestHeader(value = "Authorization") String authorization,
                                                @RequestParam(value = "volumeId") String volumeId,
-                                               @RequestBody SummaryDTO summaryDTO) {
+                                               @RequestBody PostSummaryRequestDTO summaryDTO) {
         try {
             String emailId = jwtUtils.getEmailFromToken(authorization);
             if(emailId == null || emailId.isEmpty())

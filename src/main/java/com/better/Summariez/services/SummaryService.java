@@ -1,6 +1,6 @@
 package com.better.Summariez.services;
 
-import com.better.Summariez.dtos.SummaryDTO;
+import com.better.Summariez.dtos.PostSummaryRequestDTO;
 import com.better.Summariez.models.Like;
 import com.better.Summariez.models.Summary;
 import com.better.Summariez.models.User;
@@ -17,7 +17,7 @@ public class SummaryService {
     @Autowired private SummaryRepository summaryRepo;
     @Autowired private LikeRepository likeRepo;
 
-    private Summary constructSummary(String volumeId, SummaryDTO summaryDTO, User user) {
+    private Summary constructSummary(String volumeId, PostSummaryRequestDTO summaryDTO, User user) {
         return Summary.builder()
                 .content(summaryDTO.getContent())
                 .userId(user.getId())
@@ -27,7 +27,7 @@ public class SummaryService {
                 .build();
     }
 
-    public Summary saveSummary(String volumeId, User user, SummaryDTO summaryDTO) {
+    public Summary saveSummary(String volumeId, User user, PostSummaryRequestDTO summaryDTO) {
         Summary summary = constructSummary(volumeId, summaryDTO, user);
         return summary = summaryRepo.save(summary);
     }
