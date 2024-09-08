@@ -2,9 +2,11 @@ package com.better.Summariez.utils;
 
 import com.better.Summariez.constants.ValidationConstants;
 import com.better.Summariez.dtos.UserRegistrationDTO;
+import com.better.Summariez.models.User;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class ValidationUtils {
 

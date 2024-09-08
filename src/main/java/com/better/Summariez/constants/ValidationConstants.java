@@ -8,4 +8,5 @@ public class ValidationConstants {
     public static final String PASSWORD = "password";
     public static final String EMAIL_IN_USE = "Email is already registered";
     public static final String USER_NOT_FOUND = "User not found";
+    public static final String INTERNAL_SERVER_ERROR = "Internal Server Error";
 }
