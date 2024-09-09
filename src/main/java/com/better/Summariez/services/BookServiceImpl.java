@@ -19,8 +19,11 @@ public class BookServiceImpl implements IBookService {
 
     private static final Logger logger = LogManager.getLogger(BookServiceImpl.class);
 
-    @Value("${google.books.api.searchBook}")
-    String searchBookAPI;
+    @Value("${google.books.api.searchBookByName}")
+    String searchBookByNameAPI;
+
+    @Value("${google.books.api.searchBookById}")
+    String searchBookByIdAPI;
     /**
      * Searches for a book by book name
      * @param bookName This is the book name searched by user
@@ -30,7 +33,7 @@ public class BookServiceImpl implements IBookService {
     public List<BookSearchResponseDTO> searchBookByName(String bookName) {
         List<BookSearchResponseDTO> result = new ArrayList<>();
         try {
-            String searchURL = searchBookAPI.concat(bookName);
+            String searchURL = searchBookByNameAPI.concat(bookName);
             ResponseEntity<String> response = HttpUtils.executeGetRequest(searchURL);
             String responsePayload = response.getBody();
             GoogleSearchResponseDTO searchRespDTO = JsonUtils.fromJson(responsePayload, GoogleSearchResponseDTO.class);
@@ -62,7 +65,27 @@ public class BookServiceImpl implements IBookService {
      * @return
      */
     @Override
-    public List<BookSearchResponseDTO> searchBookById(String id) {
+    public BookSearchResponseDTO searchBookById(String id) {
+        BookSearchResponseDTO result;
+        try {
+            String searchURL = searchBookByIdAPI.concat(id);
+            ResponseEntity<String> response = HttpUtils.executeGetRequest(searchURL);
+            String responsePayload = response.getBody();
+            GoogleSearchResponseDTO.Volume volume = JsonUtils.fromJson(responsePayload, GoogleSearchResponseDTO.Volume.class);
+            if(volume != null) {
+                BookSearchResponseDTO bookDTO = new BookSearchResponseDTO();
+                bookDTO.setId(volume.getId());
+                bookDTO.setDescription(volume.getVolumeInfo().getDescription());
+                bookDTO.setAuthors(volume.getVolumeInfo().getAuthors());
+                bookDTO.setPublisher(volume.getVolumeInfo().getPublisher());
+                bookDTO.setTitle(volume.getVolumeInfo().getTitle());
+                bookDTO.setPageCount(volume.getVolumeInfo().getPageCount());
+                bookDTO.setPublishedDate(volume.getVolumeInfo().getPublishedDate());
+                return bookDTO;
+            }
+        } catch (Exception e) {
+            logger.error("Exception - " + e.getMessage());
+        }
         return null;
     }
 }

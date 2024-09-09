@@ -2,7 +2,12 @@ package com.better.Summariez.controllers;
 
 import com.better.Summariez.constants.ValidationConstants;
 import com.better.Summariez.dtos.PostSummaryRequestDTO;
+import com.better.Summariez.interfaces.IAIService;
+import com.better.Summariez.models.Book;
+import com.better.Summariez.models.Summary;
 import com.better.Summariez.models.User;
+import com.better.Summariez.respositories.BookRepository;
+import com.better.Summariez.respositories.SummaryRepository;
 import com.better.Summariez.respositories.UserRepository;
 import com.better.Summariez.services.SummaryService;
 import com.better.Summariez.services.UserServiceImpl;
@@ -14,6 +19,8 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Timestamp;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -26,6 +33,9 @@ public class SummariezController {
     @Autowired private UserRepository userRepo;
     @Autowired private UserServiceImpl userService;
     @Autowired private SummaryService summaryService;
+    @Autowired private SummaryRepository summaryRepo;
+    @Autowired private BookRepository bookRepo;
+    @Autowired private IAIService aiService;
 
     @PostMapping("/summary")
     public ResponseWrapper<String> postSummary(@RequestHeader(value = "Authorization") String authorization,
@@ -63,6 +73,28 @@ public class SummariezController {
                         "User not found"));
             summaryService.likeSummary(summaryId, user.get());
             return new ResponseWrapper<>(true, "Liked", null);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        }
+        return new ResponseWrapper<>(false, null, new ResponseWrapper.ErrorResponse(500,
+                ValidationConstants.INTERNAL_SERVER_ERROR));
+    }
+
+    @GetMapping("/summariez")
+    public ResponseWrapper<List<Summary>> fetchBookSummariez(@RequestParam(value = "volumeId") String volumeId,
+                                                             @RequestParam(value = "bookName") String bookName) {
+        try {
+            Optional<Book> book = bookRepo.findById(volumeId);
+            if(book.isEmpty()) {
+                Book newBook = Book.builder()
+                        .id(volumeId)
+                        .name(bookName)
+                        .createdAt(new Timestamp(System.currentTimeMillis()).toLocalDateTime())
+                        .build();
+                bookRepo.save(newBook);
+            }
+            aiService.getAISummary(volumeId);
+            return new ResponseWrapper<>(true, summaryRepo.findAllByVolumeId(volumeId), null);
         } catch (Exception e) {
             logger.error(e.getMessage());
         }

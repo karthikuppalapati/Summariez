@@ -17,5 +17,5 @@ public interface IBookService {
      * @param id Here id is the id of the book in the 3rd party service database. For example Google Books API
      * @return
      */
-    public List<BookSearchResponseDTO> searchBookById(String id);
+    public BookSearchResponseDTO searchBookById(String id);
 }
