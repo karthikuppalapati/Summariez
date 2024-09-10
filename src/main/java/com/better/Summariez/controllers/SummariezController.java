@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
@@ -41,64 +42,46 @@ public class SummariezController {
     public ResponseWrapper<String> postSummary(@RequestHeader(value = "Authorization") String authorization,
                                                @RequestParam(value = "volumeId") String volumeId,
                                                @RequestBody PostSummaryRequestDTO summaryDTO) {
-        try {
-            String emailId = jwtUtils.getEmailFromToken(authorization);
-            if(emailId == null || emailId.isEmpty())
-                return new ResponseWrapper<>(false, null, new ResponseWrapper.ErrorResponse(400,
-                        "Invalid token"));
-            Optional<User> user = userRepo.findByEmailId(emailId);
-            if(!user.isPresent())
-                return new ResponseWrapper<>(false, null, new ResponseWrapper.ErrorResponse(404,
-                        "User not found"));
-            summaryService.saveSummary(volumeId, user.get(), summaryDTO);
-            return new ResponseWrapper<>(true, "Summary posted successfully", null);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-        }
-        return new ResponseWrapper<>(false, null, new ResponseWrapper.ErrorResponse(500,
-                ValidationConstants.INTERNAL_SERVER_ERROR));
+        String emailId = jwtUtils.getEmailFromToken(authorization);
+        if(emailId == null || emailId.isEmpty())
+            return new ResponseWrapper<>(false, null, new ResponseWrapper.ErrorResponse(
+                    HttpStatus.BAD_REQUEST.value(), "Invalid token"));
+        Optional<User> user = userRepo.findByEmailId(emailId);
+        if(!user.isPresent())
+            return new ResponseWrapper<>(false, null, new ResponseWrapper.ErrorResponse(
+                    HttpStatus.NOT_FOUND.value(), "User not found"));
+        summaryService.saveSummary(volumeId, user.get(), summaryDTO);
+        return new ResponseWrapper<>(true, "Summary posted successfully", null);
     }
 
     @PostMapping("/like")
     public ResponseWrapper<String> likeSummary(@RequestHeader(value = "Authorization") String authorization,
-                                               @RequestParam(value = "summaryId") String summaryId) {
-        try {
-            String emailId = jwtUtils.getEmailFromToken(authorization);
-            if(emailId == null || emailId.isEmpty())
-                return new ResponseWrapper<>(false, null, new ResponseWrapper.ErrorResponse(400,
-                        "Invalid token"));
-            Optional<User> user = userRepo.findByEmailId(emailId);
-            if(user.isEmpty())
-                return new ResponseWrapper<>(false, null, new ResponseWrapper.ErrorResponse(404,
-                        "User not found"));
-            summaryService.likeSummary(summaryId, user.get());
-            return new ResponseWrapper<>(true, "Liked", null);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-        }
-        return new ResponseWrapper<>(false, null, new ResponseWrapper.ErrorResponse(500,
-                ValidationConstants.INTERNAL_SERVER_ERROR));
+                                               @RequestParam(value = "summaryId") String summaryId) throws Exception {
+        String emailId = jwtUtils.getEmailFromToken(authorization);
+        if(emailId == null || emailId.isEmpty())
+            return new ResponseWrapper<>(false, null, new ResponseWrapper.ErrorResponse(
+                    HttpStatus.BAD_REQUEST.value(), "Invalid token"));
+        Optional<User> user = userRepo.findByEmailId(emailId);
+        if(user.isEmpty())
+            return new ResponseWrapper<>(false, null, new ResponseWrapper.ErrorResponse(
+                    HttpStatus.NOT_FOUND.value(), "User not found"));
+        summaryService.likeSummary(summaryId, user.get());
+        return new ResponseWrapper<>(true, "Liked", null);
     }
 
     @GetMapping("/summariez")
     public ResponseWrapper<List<Summary>> fetchBookSummariez(@RequestParam(value = "volumeId") String volumeId,
                                                              @RequestParam(value = "bookName") String bookName) {
-        try {
-            Optional<Book> book = bookRepo.findById(volumeId);
-            if(book.isEmpty()) {
-                Book newBook = Book.builder()
-                        .id(volumeId)
-                        .name(bookName)
-                        .createdAt(new Timestamp(System.currentTimeMillis()).toLocalDateTime())
-                        .build();
-                bookRepo.save(newBook);
-            }
-            aiService.getAISummary(volumeId);
-            return new ResponseWrapper<>(true, summaryRepo.findAllByVolumeId(volumeId), null);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
+        Optional<Book> book = bookRepo.findById(volumeId);
+        if(book.isEmpty()) {
+            Book newBook = Book.builder()
+                    .id(volumeId)
+                    .name(bookName)
+                    .createdAt(new Timestamp(System.currentTimeMillis()).toLocalDateTime())
+                    .build();
+            bookRepo.save(newBook);
         }
-        return new ResponseWrapper<>(false, null, new ResponseWrapper.ErrorResponse(500,
-                ValidationConstants.INTERNAL_SERVER_ERROR));
+        aiService.getAISummary(volumeId);
+        return new ResponseWrapper<>(true, summaryRepo.findAllByVolumeId(volumeId), null);
     }
 }
