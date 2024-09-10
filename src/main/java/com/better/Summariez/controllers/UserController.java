@@ -51,19 +51,13 @@ public class UserController {
 
     @GetMapping("/profile")
     public ResponseWrapper<ProfileDTO> fetchUserProfile(@RequestHeader(value = "Authorization") String authorization) {
-        try {
-            String emailId = jwtUtils.getEmailFromToken(authorization);
-            if(emailId == null || emailId.isEmpty())
-                return new ResponseWrapper<>(false, null, new ResponseWrapper.ErrorResponse(400,
-                        "Invalid token"));
-            Optional<User> user = userRepo.findByEmailId(emailId);
-            return user.map(value -> new ResponseWrapper<>(true, userService.fetchProfile(value), null))
-                    .orElseGet(() -> new ResponseWrapper<>(false, null, new ResponseWrapper.ErrorResponse
-                            (404, "User not found")));
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-        }
-        return new ResponseWrapper<>(false, null, new ResponseWrapper.ErrorResponse(500,
-                ValidationConstants.INTERNAL_SERVER_ERROR));
+        String emailId = jwtUtils.getEmailFromToken(authorization);
+        if(emailId == null || emailId.isEmpty())
+            return new ResponseWrapper<>(false, null, new ResponseWrapper.ErrorResponse(400,
+                    "Invalid token"));
+        Optional<User> user = userRepo.findByEmailId(emailId);
+        return user.map(value -> new ResponseWrapper<>(true, userService.fetchProfile(value), null))
+                .orElseGet(() -> new ResponseWrapper<>(false, null, new ResponseWrapper.ErrorResponse
+                        (404, "User not found")));
     }
 }
